@@ -9,6 +9,7 @@ def list_entries():
     Returns a list of all names of encyclopedia entries.
     """
     _, filenames = default_storage.listdir("entries")
+    #syntax von diesem return verstehen
     return list(sorted(re.sub(r"\.md$", "", filename)
                 for filename in filenames if filename.endswith(".md")))
 
@@ -35,3 +36,5 @@ def get_entry(title):
         return f.read().decode("utf-8")
     except FileNotFoundError:
         return None
+
+
