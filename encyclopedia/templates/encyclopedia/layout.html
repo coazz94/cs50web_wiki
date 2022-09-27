@@ -13,7 +13,8 @@
             <div class="sidebar col-lg-2 col-md-3">
                 <h2>Wiki</h2>
                 <form>
-                    <input class="search" type="text" name="q" placeholder="Search Encyclopedia">
+                    <!--input class="search" type="text" name="q" placeholder="Search Encyclopedia"-->
+                    {{ search }}
                 </form>
                 <div>
                     <a href="{% url 'wiki:index' %}">Home</a>

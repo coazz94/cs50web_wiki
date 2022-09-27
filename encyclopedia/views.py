@@ -1,14 +1,23 @@
 from django.shortcuts import render
 import markdown2
+from django import forms
+
 
 from . import util
 
 
-def index(request):
-    return render(request, "encyclopedia/index.html", {
-        "entries": util.list_entries()
-    })
+class Search_Field(forms.Form):
+    search_label = forms.CharField(label="" , widget=forms.TextInput(attrs={'placeholder': 'Search Encyclopedia'}))
 
+
+search = Search_Field()
+
+def index(request):
+
+    return render(request, "encyclopedia/index.html", {
+        "entries": util.list_entries(),
+        "search" : search
+    })
 
 
 def get_page(request, title):
@@ -24,5 +33,19 @@ def get_page(request, title):
     else:
         return render(request, "encyclopedia/infopage.html", {
             "title": title,
-            "page" : markdown2.markdown(page)
+            "page" : markdown2.markdown(page),
         })
+
+
+def search_page(request):
+
+    
+    
+    if request.method == "GET":
+        print(search)
+        
+    else:
+        return index(request)
+
+    return index(request)
+    #return to index page
