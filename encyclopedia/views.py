@@ -14,6 +14,18 @@ class Search_Field(forms.Form):
     search_label = forms.CharField(label="" , widget=forms.TextInput(attrs={'placeholder': 'Search Encyclopedia'}))
 
 
+class NewPageForm(forms.Form):
+    pagename = forms.CharField(label="", required = True, 
+    widget= forms.TextInput
+    (attrs={'placeholder':'Enter Title','class':'col-lg-4','style':'margin-top:1rem;'}))
+
+
+    body = forms.CharField(label="",required= False,
+    widget= forms.Textarea
+    (attrs={'placeholder':'Enter markdown content','class':'col-lg-5','style':'top:1rem;height:40%'}))
+
+
+
 main_form = Search_Field()
 
 
@@ -81,3 +93,22 @@ def search(request):
 
     else:
             return HttpResponseRedirect(reverse("wiki:index"))
+
+
+
+def create_page(request):
+    
+    if request.method == "POST":
+        x = NewPageForm(request.POST)
+        if x.is_valid():
+            pagename = x.cleaned_data["pagename"]
+            
+        else:
+            return render(request, "encyclopedia/error.html", {
+                "form":main_form
+            })
+    else:
+        return render(request, "encyclopedia/create.html",{
+            "form" : main_form,
+            "create_form":NewPageForm()
+        })
