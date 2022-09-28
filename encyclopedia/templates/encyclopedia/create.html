@@ -1,0 +1,33 @@
+{% extends "encyclopedia/layout.html" %}
+
+
+{% block title %} Create Page {% endblock %}
+
+
+{% block body %}
+    <h1>Create a new Page</h1>
+    <h3 style="margin-top: 20px">Title:</h3>
+    {{ create_form.pagename }}
+    <h3 style="margin-top: 20px">Content of Page</h3>
+    <p style = "margin-bottom: 0px;">Please use markdwon language</p>
+    {{ create_form.body }}
+    <form action="{% url 'wiki:create_page' %}" method="POST">
+        {% csrf_token %}
+        <input type="submit" class="row" style="margin-top: 50px;margin-left: 17%;" value="Create Page">
+    </form>
+{% endblock %}
+
+
+<!--
+        <h1>Create a new Page</h1>
+    <h3 style="margin-top: 40px">Title:</h3>
+    <textarea style="width: 850px; height: 35px; margin-bottom: 20px;"id="title_box" name="title"></textarea>
+    <h3 style="margin-top: 20px">Content of Page</h3>
+    <p>Please write in markdown language</p>
+    <textarea style="width: 850px; height: 200px "id="content_box" name="content"></textarea>
+
+    <form action="{% url 'wiki:create_page' %}" method="POST">
+        {% csrf_token %}
+        <input type="submit" style="position: fixed; left: 35%; top: 51%;" value="Create Page">
+    </form>
+-->
