@@ -5,6 +5,7 @@ import markdown2
 from django import forms
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from pip import main
 
 
 from . import util
@@ -15,18 +16,24 @@ class Search_Field(forms.Form):
 
 
 class NewPageForm(forms.Form):
-    pagename = forms.CharField(label="", required = False, 
-    widget= forms.TextInput
-    (attrs={'placeholder':'Enter Title','class':'col-lg-4','style':'margin-top:1rem;'}))
+    pagename = forms.CharField(label="", required = True, 
+    widget= forms.Textarea
+    (attrs={'placeholder':'Enter Title','value':'TEst','class':'col-lg-4','style':'margin-top:1rem;height:2rem'}))
 
 
-    content = forms.CharField(label="",required= False,
+    content = forms.CharField(label="",required= True,
     widget= forms.Textarea
     (attrs={'placeholder':'Enter markdown content','class':'col-lg-5','style':'top:1rem;height:40%'}))
 
 
 
 main_form = Search_Field()
+
+
+
+def clean_name(title):
+
+    return title[0].upper() + title [1:]
 
 
 def index(request):
@@ -68,9 +75,9 @@ def search(request):
     if request.method == "POST":
         form = Search_Field(request.POST)
         if form.is_valid():
-            search = form.cleaned_data["search_label"]
+            search = clean_name(form.cleaned_data["search_label"])
             entries = util.list_entries()
-            
+
             if search in entries:
                 return get_page(request, search)
             
@@ -95,47 +102,28 @@ def search(request):
             return HttpResponseRedirect(reverse("wiki:index"))
 
 
-
 def create_page(request):
 
 
-    #einfach pagename neemn und den ersten buchstaben Großmachen und schauen ob er dann in der liste its case insensiteve
-    
     if request.method == "POST":
         x = NewPageForm(request.POST)
         if x.is_valid():
 
-            pagename = x.cleaned_data["pagename"]
+            pagename = clean_name(x.cleaned_data["pagename"])
             content = x.cleaned_data["content"]
-            existing = util.list_entries() # eventuell globale Variable / da oft verwendet // or load here a list with lower items //function
 
+            try:
+                with open(f"entries/{pagename}.md", "x") as f: 
+                    f.write("# " + pagename + "\n\n")
+                    f.write(content)
+                f.close()
+            except:
+                return render(request, "encyclopedia/error.html", {
+                "form":main_form
+                })
 
+            return get_page(request, pagename)
 
-            for entry in existing:
-                if entry.lower() == pagename.lower():
-                    return render(request, "encyclopedia/error.html", { #vlt funktion für Error page
-                    "form":main_form
-                    })
-
-            
-            #braucht man nicht da md sowieso nur makdown text speichert 
-            #if pagename and content:
-            #    try:
-            #        content = markdown2.markdown(content)
-            #    except:
-            #        return render(request, "encyclopedia/error.html", { #vlt funktion für Error page
-            #        "form":main_form
-            #        })
-
-
-
-            with open(f"entries/{pagename}.md", "x") as f: #return Error when page exists, kann man statt dem oben bnützen
-                f.write(pagename + "\n")
-                f.write(content)
-            f.close()
-
-            #muss was hier returnieren 
-            
         else:
             return render(request, "encyclopedia/error.html", {
                 "form":main_form
@@ -144,4 +132,15 @@ def create_page(request):
         return render(request, "encyclopedia/create.html",{
             "form" : main_form,
             "create_form":NewPageForm()
+        })
+
+
+def edit(request):
+
+    if request.method == "POST":
+        pass
+    else:
+        return render(request, "encyclopedia/edit.html", {
+            "form": main_form,
+            "create_form": NewPageForm(initial={'pagename': "test", 'content':"Test2"})
         })
