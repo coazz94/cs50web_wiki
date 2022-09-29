@@ -97,35 +97,44 @@ def search(request):
 
 
 def create_page(request):
+
+
+    #einfach pagename neemn und den ersten buchstaben Großmachen und schauen ob er dann in der liste its case insensiteve
     
     if request.method == "POST":
         x = NewPageForm(request.POST)
         if x.is_valid():
+
             pagename = x.cleaned_data["pagename"]
             content = x.cleaned_data["content"]
-            existing = util.list_entries() # eventuell globale Variable / da oft verwendet // or load here a list with lower items
+            existing = util.list_entries() # eventuell globale Variable / da oft verwendet // or load here a list with lower items //function
 
 
-            #sfor entry in existing:
-            #s    return render(request, "encyclopedia/error.html", { #vlt funktion für Error page
-            #s    "form":main_form
-            #s    })
-            
 
-            if pagename and content:
-                try:
-                    content = markdown2(content)
-                except:
+            for entry in existing:
+                if entry.lower() == pagename.lower():
                     return render(request, "encyclopedia/error.html", { #vlt funktion für Error page
                     "form":main_form
                     })
-            
-                with open(f"entries/{pagename}.md", "x") as f: #return Error when page exists, kann man statt dem oben bnützen
-                    f.write(pagename, "\n")
-                    f.write(content)
-                
-                f.close()
 
+            
+            #braucht man nicht da md sowieso nur makdown text speichert 
+            #if pagename and content:
+            #    try:
+            #        content = markdown2.markdown(content)
+            #    except:
+            #        return render(request, "encyclopedia/error.html", { #vlt funktion für Error page
+            #        "form":main_form
+            #        })
+
+
+
+            with open(f"entries/{pagename}.md", "x") as f: #return Error when page exists, kann man statt dem oben bnützen
+                f.write(pagename + "\n")
+                f.write(content)
+            f.close()
+
+            #muss was hier returnieren 
             
         else:
             return render(request, "encyclopedia/error.html", {
