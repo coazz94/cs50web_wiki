@@ -15,12 +15,12 @@ class Search_Field(forms.Form):
 
 
 class NewPageForm(forms.Form):
-    pagename = forms.CharField(label="", required = True, 
+    pagename = forms.CharField(label="", required = False, 
     widget= forms.TextInput
     (attrs={'placeholder':'Enter Title','class':'col-lg-4','style':'margin-top:1rem;'}))
 
 
-    body = forms.CharField(label="",required= False,
+    content = forms.CharField(label="",required= False,
     widget= forms.Textarea
     (attrs={'placeholder':'Enter markdown content','class':'col-lg-5','style':'top:1rem;height:40%'}))
 
@@ -102,6 +102,30 @@ def create_page(request):
         x = NewPageForm(request.POST)
         if x.is_valid():
             pagename = x.cleaned_data["pagename"]
+            content = x.cleaned_data["content"]
+            existing = util.list_entries() # eventuell globale Variable / da oft verwendet // or load here a list with lower items
+
+
+            #sfor entry in existing:
+            #s    return render(request, "encyclopedia/error.html", { #vlt funktion für Error page
+            #s    "form":main_form
+            #s    })
+            
+
+            if pagename and content:
+                try:
+                    content = markdown2(content)
+                except:
+                    return render(request, "encyclopedia/error.html", { #vlt funktion für Error page
+                    "form":main_form
+                    })
+            
+                with open(f"entries/{pagename}.md", "x") as f: #return Error when page exists, kann man statt dem oben bnützen
+                    f.write(pagename, "\n")
+                    f.write(content)
+                
+                f.close()
+
             
         else:
             return render(request, "encyclopedia/error.html", {
