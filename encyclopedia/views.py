@@ -137,10 +137,16 @@ def create_page(request):
 
 def edit(request):
 
+
+
+
     if request.method == "POST":
-        pass
-    else:
+        pagename = request.POST.get("edit")
+        print(pagename)
+
         return render(request, "encyclopedia/edit.html", {
             "form": main_form,
             "create_form": NewPageForm(initial={'pagename': "test", 'content':"Test2"})
         })
+    else:
+        pass

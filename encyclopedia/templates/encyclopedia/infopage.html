@@ -6,9 +6,9 @@
 
 {% block body %}
 
-    <form action="{% url 'wiki:edit' %}" method="GET">
+    <form action="{% url 'wiki:edit' %}" method="POST">
         {% csrf_token %}
-        <input type="submit" value="Edit Page" style="margin-left:90%; width: 5%;">
+        <button type="submit" id = "edit" name ="edit" value="Test" style="margin-left:90%; width: 5%;">edit</button>
 
         {{ page | safe }}
     
