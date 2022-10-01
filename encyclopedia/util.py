@@ -17,16 +17,17 @@ def list_entries():
 
 def save_entry(title, content):
     """
-    Saves an encyclopedia entry, given its title and Markdown
-    content. If an existing entry with the same title already exists,
-    it is replaced.
+        Saves an encyclopedia entry, given its title and Markdown
+        content. If an existing entry with the same title already exists,
+        it is replaced.
     """
-    content = "# " + title  + "\n" + content 
+
+    write = "# " + title + "\n" + content.replace("\n", "")
 
     filename = f"entries/{title}.md"
     if default_storage.exists(filename):
         default_storage.delete(filename)
-    default_storage.save(filename, ContentFile(content))
+    default_storage.save(filename, ContentFile(write))
 
 
 def get_entry(title):
@@ -34,6 +35,7 @@ def get_entry(title):
     Retrieves an encyclopedia entry by its title. If no such
     entry exists, the function returns None.
     """
+
     try:
         f = default_storage.open(f"entries/{title}.md")
         return f.read().decode("utf-8")
@@ -50,5 +52,7 @@ def clean_name(title):
 
 
 def random_page():
-
+    """
+        return a random Page
+    """
     return random.choice(list_entries())

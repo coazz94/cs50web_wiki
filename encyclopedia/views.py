@@ -16,7 +16,6 @@ main_form = forms.Search_Field()
 
 
 
-
 def index(request):
     """
         Return the main index page
@@ -38,7 +37,8 @@ def get_page(request, title):
 
     if page is None:
         return render(request, "encyclopedia/error.html", {
-            "form" : main_form
+            "form" : main_form, 
+            "message" : "The requested site was not found, you can create your own"
         })
 
     else:
@@ -79,7 +79,8 @@ def search(request):
                  
             else:
                 return render(request, "encyclopedia/error.html", {
-                    "form":form
+                    "form":form,
+                    "message" : "The searched site was not found, you can create your own"
                 })
 
     else:
@@ -106,7 +107,8 @@ def create_page(request):
                 util.save_entry(pagename, content)
             except:
                 return render(request, "encyclopedia/error.html", {
-                "form":main_form
+                "form":main_form, 
+                "message" : "Couldn´t save the page, try again"
                 })
 
             return get_page(request, pagename)
@@ -135,8 +137,11 @@ def edit(request):
             pagename = request.POST.get("edit")
             page = util.get_entry(pagename)
 
-            matches = re.search(r"^[#]\s(.*)\n((?:.|\n)*)", page, re.MULTILINE)
-            content = matches.group(2).strip()
+            try:
+                matches = re.search(r"^[#]\s(.*)\n((?:.|\n)*)", page, re.MULTILINE)
+                content = matches.group(2).strip()
+            except:
+                content = ""
 
             return render(request, "encyclopedia/edit.html", {
                 "form": main_form,
@@ -154,10 +159,14 @@ def edit(request):
                 content = form_data.cleaned_data["content"]
                 
                 try:
+                    
+                    print(content, pagename)
+
                     util.save_entry(pagename, content)
                 except:
                     return render(request, "encyclopedia/error.html", {
-                        "form":main_form
+                        "form":main_form,
+                        "message" : "Couldn´t save the the changes, try again"
                         })
 
                 return render(request, "encyclopedia/infopage.html", {

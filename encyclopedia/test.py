@@ -1,8 +1,14 @@
-from . import util
+
+
+a="""Test
+
+dawdad
 
 
 
-a = util.get_entry("CSS")
 
 
-print(a)
+
+"""
+
+print(len(a.replace("\n", "")))
