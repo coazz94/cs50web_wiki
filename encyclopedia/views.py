@@ -2,48 +2,32 @@ from re import S
 from telnetlib import SE
 from django.shortcuts import render
 import markdown2
-from django import forms
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from pip import main
+import re
 
 
-from . import util
-
-
-class Search_Field(forms.Form):
-    search_label = forms.CharField(label="" , widget=forms.TextInput(attrs={'placeholder': 'Search Encyclopedia'}))
-
-
-class NewPageForm(forms.Form):
-    pagename = forms.CharField(label="", required = True, 
-    widget= forms.Textarea
-    (attrs={'placeholder':'Enter Title','value':'TEst','class':'col-lg-4','style':'margin-top:1rem;height:2rem'}))
-
-
-    content = forms.CharField(label="",required= True,
-    widget= forms.Textarea
-    (attrs={'placeholder':'Enter markdown content','class':'col-lg-5','style':'top:1rem;height:40%'}))
+from . import util, forms
 
 
 
-main_form = Search_Field()
+main_form = forms.Search_Field()
 
 
-
-def clean_name(title):
-
-    return title[0].upper() + title [1:]
 
 
 def index(request):
+    """
+        Return the main index page
+    """
     return render(request, "encyclopedia/index.html", {
         "entries": util.list_entries(),
         "form" : main_form 
     })
 
 
-def get_page(request, title, ):
+def get_page(request, title):
     """
         1. get the page content from the function
         2. if the page is empty return an error Page
@@ -54,7 +38,7 @@ def get_page(request, title, ):
 
     if page is None:
         return render(request, "encyclopedia/error.html", {
-            "form" : form
+            "form" : main_form
         })
 
     else:
@@ -73,9 +57,9 @@ def search(request):
     """
 
     if request.method == "POST":
-        form = Search_Field(request.POST)
+        form = forms.Search_Field(request.POST)
         if form.is_valid():
-            search = clean_name(form.cleaned_data["search_label"])
+            search = util.clean_name(form.cleaned_data["search_label"])
             entries = util.list_entries()
 
             if search in entries:
@@ -103,20 +87,23 @@ def search(request):
 
 
 def create_page(request):
+    """
+        1. If request is post = create a new Page else just go to the page to create a new page
+        2. get the form Data the Form ( check if valid )
+        3. write to a file with the same name as the title and return the new created page
+
+    """
 
 
     if request.method == "POST":
-        x = NewPageForm(request.POST)
-        if x.is_valid():
+        form_data = forms.NewPageForm(request.POST)
+        if form_data.is_valid():
 
-            pagename = clean_name(x.cleaned_data["pagename"])
-            content = x.cleaned_data["content"]
+            pagename = util.clean_name(form_data.cleaned_data["pagename"])
+            content = form_data.cleaned_data["content"]
 
             try:
-                with open(f"entries/{pagename}.md", "x") as f: 
-                    f.write("# " + pagename + "\n\n")
-                    f.write(content)
-                f.close()
+                util.save_entry(pagename, content)
             except:
                 return render(request, "encyclopedia/error.html", {
                 "form":main_form
@@ -131,22 +118,56 @@ def create_page(request):
     else:
         return render(request, "encyclopedia/create.html",{
             "form" : main_form,
-            "create_form":NewPageForm()
+            "create_form":forms.NewPageForm()
         })
 
 
 def edit(request):
+    """
+        1. Two diffrent POST can be done ( one is to get to the edit Page and the other one is tu save the changes)
+        2. re was used because we only allow to change the content of the page not the title
+        3. againg take the input and delete the old file and save a new and return to the new page
+    
+    """
+
+    
+    if "edit" in request.POST:
+            pagename = request.POST.get("edit")
+            page = util.get_entry(pagename)
+
+            matches = re.search(r"^[#]\s(.*)\n((?:.|\n)*)", page, re.MULTILINE)
+            content = matches.group(2).strip()
+
+            return render(request, "encyclopedia/edit.html", {
+                "form": main_form,
+                "create_form": forms.EditPage(initial={"content":content}),
+                "pagename" : pagename
+            })
+
+    elif "save_changes" in request.POST:
+
+            form_data = forms.EditPage(request.POST)
+            pagename = request.POST.get("save_changes")
+
+            if form_data.is_valid():
+
+                content = form_data.cleaned_data["content"]
+                
+                try:
+                    util.save_entry(pagename, content)
+                except:
+                    return render(request, "encyclopedia/error.html", {
+                        "form":main_form
+                        })
+
+                return render(request, "encyclopedia/infopage.html", {
+                    "title": pagename,
+                    "page" : markdown2.markdown(util.get_entry(pagename)),
+                    "form" : main_form 
+                    })
 
 
+def random(request):
 
+    return get_page(request, util.random_page())
 
-    if request.method == "POST":
-        pagename = request.POST.get("edit")
-        print(pagename)
-
-        return render(request, "encyclopedia/edit.html", {
-            "form": main_form,
-            "create_form": NewPageForm(initial={'pagename': "test", 'content':"Test2"})
-        })
-    else:
-        pass

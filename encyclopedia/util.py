@@ -2,6 +2,7 @@ import re
 
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+import random
 
 
 def list_entries():
@@ -20,6 +21,8 @@ def save_entry(title, content):
     content. If an existing entry with the same title already exists,
     it is replaced.
     """
+    content = "# " + title  + "\n" + content 
+
     filename = f"entries/{title}.md"
     if default_storage.exists(filename):
         default_storage.delete(filename)
@@ -38,3 +41,14 @@ def get_entry(title):
         return None
 
 
+def clean_name(title):
+    """
+        Just a small Function to make all the titels of the Pages Capital letter first
+    """
+
+    return title[0].upper() + title [1:]
+
+
+def random_page():
+
+    return random.choice(list_entries())

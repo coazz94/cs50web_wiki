@@ -1,11 +1,14 @@
+import re
 
 
-abc = ["Aleks", "John", "Jelena", "Zeljana"]
+name = """# CSS
 
-print(abc)
-
-
-abc = list(map(lambda x: x.lower(), abc))
+CSS is a language that can be used to add style to an [HTML](/wiki/HTML) page."""
 
 
-print(abc)
+test = "abc"
+
+matches = re.search(r"^[#]\s.*\n\n(.*)", name, re.MULTILINE)
+
+
+print(matches.groups())
