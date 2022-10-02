@@ -56,3 +56,14 @@ def random_page():
         return a random Page
     """
     return random.choice(list_entries())
+
+
+def delete_page(title):
+    
+    filename = f"entries/{title}.md"
+    if default_storage.exists(filename):
+        default_storage.delete(filename)
+        return True
+    else:
+        return False
+    

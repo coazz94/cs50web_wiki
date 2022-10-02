@@ -7,13 +7,13 @@
 {% block body %}
     <h1 style="margin-bottom: 30px;">Edit This Page</h1>
     <h3>Title : {{ pagename }}</h3>
-
     <form action="{% url 'wiki:edit' %}" method="POST" >
         {% csrf_token %}
-        
         <p style = "margin-bottom: 0px;margin-top: 30px;">Please use markdown language</p>
         {{ create_form.content }}
-
-        <button type="submit" class="row" id="save_changes" name ="save_changes" value="{{ pagename }}" style="margin-top: 50px;margin-left: 17%;">Save Changes</button>
+        <div class="row-10" style="margin-top:5%">
+            <button type="submit" class="btn btn-primary" id="save_changes" name ="save_changes" value="{{ pagename }}" style="">Save Changes</button>
+            <button type="submit" class="btn btn-danger" id="delete" name ="delete" value="{{ pagename }}" style="">Delete Page</button>
+        </div>
     </form>
 {% endblock %}

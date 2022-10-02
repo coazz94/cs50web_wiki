@@ -30,7 +30,7 @@ def get_page(request, title):
     """
         1. get the page content from the function
         2. if the page is empty return an error Page
-        3.Return a rendererd Page, with the content, markdown = return html code (!!! use safe in template !!!)
+        3. Return a rendererd Page, with the content, markdown = return html code (!!! use safe in template !!!)
     """
     
     page = util.get_entry(title)
@@ -61,14 +61,13 @@ def search(request):
         if form.is_valid():
             search = util.clean_name(form.cleaned_data["search_label"])
             entries = util.list_entries()
-
-            if search in entries:
-                return get_page(request, search)
             
             entries_searched = []
 
             for entry in entries:
-                if search.lower() in entry.lower():
+                if search.lower() == entry.lower():
+                    return get_page(request, search)
+                elif search.lower() in entry.lower():
                     entries_searched.append(entry)
 
             if entries_searched:
@@ -102,17 +101,24 @@ def create_page(request):
 
             pagename = util.clean_name(form_data.cleaned_data["pagename"])
             content = form_data.cleaned_data["content"]
+            
 
-            try:
-                util.save_entry(pagename, content)
-            except:
+            if pagename.lower() not in [x.lower() for x in util.list_entries()]:
+                try:
+                    util.save_entry(pagename, content)
+                    return get_page(request, pagename)
+                except:
+                    return render(request, "encyclopedia/error.html", {
+                    "form":main_form, 
+                    "message" : "Couldn´t save the page, try again"
+                    })
+            else:
                 return render(request, "encyclopedia/error.html", {
-                "form":main_form, 
-                "message" : "Couldn´t save the page, try again"
+                    "form":main_form, 
+                    "message" : "Page with that name alredy exists"
                 })
 
-            return get_page(request, pagename)
-
+            
         else:
             return render(request, "encyclopedia/error.html", {
                 "form":main_form
@@ -128,8 +134,8 @@ def edit(request):
     """
         1. Two diffrent POST can be done ( one is to get to the edit Page and the other one is tu save the changes)
         2. re was used because we only allow to change the content of the page not the title
-        3. againg take the input and delete the old file and save a new and return to the new page
-    
+        3. again take the input and delete the old file and save a new and return to the new page
+        4. if the request is delete, then delete the page from the file
     """
 
     
@@ -159,9 +165,6 @@ def edit(request):
                 content = form_data.cleaned_data["content"]
                 
                 try:
-                    
-                    print(content, pagename)
-
                     util.save_entry(pagename, content)
                 except:
                     return render(request, "encyclopedia/error.html", {
@@ -175,8 +178,23 @@ def edit(request):
                     "form" : main_form 
                     })
 
+    elif "delete" in request.POST:
+        
+        pagename = request.POST.get("delete")
+
+        if pagename.lower() in [x.lower() for x in util.list_entries()]:
+            
+            if not util.delete_page(pagename):
+                return render(request, "encyclopedia/error.html", {
+                    "form":main_form, 
+                    "message" : "Something went wrong, try again"
+                })
+
+            return HttpResponseRedirect(reverse("wiki:index"))
+
 
 def random(request):
 
     return get_page(request, util.random_page())
+
 
